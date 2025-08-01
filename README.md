@@ -1,0 +1,3 @@
+# discord_reaction_info_selenity
+
+Discordメッセージのリアクション情報を表示するBot
