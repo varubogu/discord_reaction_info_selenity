@@ -88,8 +88,8 @@ async fn process_reaction_members_mode(
         
         let users = get_filtered_users(ctx, message, reaction, include_users, exclude_users).await?;
         let user_mentions: Vec<String> = users.iter().map(|id| format!("<@{}>", id)).collect();
-        
-        result.push_str(&format!("  {}: ```{}```\n", reaction_emoji, user_mentions.join(" ")));
+        let users_mention = user_mentions.join(" ");
+        result.push_str(&format!("  {}: {}```{}```\n", reaction_emoji, users_mention, users_mention));
     }
     
     Ok(Response {
@@ -118,8 +118,8 @@ async fn process_full_mode(
         
         let users = get_filtered_users(ctx, message, reaction, include_users, exclude_users).await?;
         let user_mentions: Vec<String> = users.iter().map(|id| format!("<@{}>", id)).collect();
-        
-        result.push_str(&format!("  {}: {} ```{}```\n", reaction_emoji, users.len(), user_mentions.join(" ")));
+        let users_mention = user_mentions.join(" ");
+        result.push_str(&format!("  {}: {} {}```{}```\n", reaction_emoji, users.len(), users_mention, users_mention));
     }
     
     Ok(Response {
@@ -180,11 +180,12 @@ async fn process_members_mode(
     }
     
     let user_mentions: Vec<String> = all_users.iter().map(|id| format!("<@{}>", id)).collect();
-    
+
+    let users_mention = user_mentions.join(" ");
     Ok(Response {
         content: format!(
-            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  ```{}```",
-            message_url, author_mention, user_mentions.join(" ")
+            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  {}```{}```",
+            message_url, author_mention, users_mention, users_mention
         ),
     })
 }
@@ -216,11 +217,12 @@ async fn process_members_author_mode(
     }
     
     let user_mentions: Vec<String> = all_users.iter().map(|id| format!("<@{}>", id)).collect();
-    
+
+    let users_mention = user_mentions.join(" ");
     Ok(Response {
         content: format!(
-            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  ```{}```",
-            message_url, author_mention, user_mentions.join(" ")
+            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  {}```{}```",
+            message_url, author_mention, users_mention, users_mention
         ),
     })
 }
