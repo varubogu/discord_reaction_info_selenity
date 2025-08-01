@@ -68,12 +68,16 @@ async fn register_commands(ctx: &Context) -> Result<()> {
                 .add_string_choice("members_author", "members_author")
         );
 
-    // Register context menu command
+    // Register context menu commands
     let context_menu_command = CreateCommand::new("Reaction Members")
+        .kind(CommandType::Message);
+    
+    let members_context_menu_command = CreateCommand::new("Members")
         .kind(CommandType::Message);
 
     ctx.http.create_global_command(&slash_command).await?;
     ctx.http.create_global_command(&context_menu_command).await?;
+    ctx.http.create_global_command(&members_context_menu_command).await?;
     info!("Commands registered successfully");
     Ok(())
 }
