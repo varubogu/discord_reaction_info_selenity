@@ -1,11 +1,17 @@
 use anyhow::Result;
 use serenity::{
-    builder::{CreateInteractionResponse, CreateInteractionResponseFollowup},
-    model::application::CommandInteraction,
+    builder::{CreateCommand, CreateInteractionResponse, CreateInteractionResponseFollowup},
+    model::application::{CommandInteraction, CommandType},
     prelude::*,
 };
 use serenity::all::CreateInteractionResponseMessage;
 use crate::services::reaction_users::{process_reaction_members, Parameter, Mode};
+
+/// Create the Members context menu command
+pub fn create_command() -> CreateCommand {
+    CreateCommand::new("Members")
+        .kind(CommandType::Message)
+}
 
 /// Handle the reaction members context menu command
 pub async fn handle_reaction_members_context_menu(

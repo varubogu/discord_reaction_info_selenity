@@ -1,12 +1,43 @@
 use anyhow::Result;
 use serenity::{
-    builder::{CreateInteractionResponse, CreateInteractionResponseFollowup},
-    model::application::CommandInteraction,
+    builder::{CreateCommand, CreateCommandOption, CreateInteractionResponse, CreateInteractionResponseFollowup},
+    model::application::{CommandInteraction, CommandOptionType},
     prelude::*,
 };
 use serenity::all::CreateInteractionResponseMessage;
 use crate::services::reaction_users::{process_reaction_members, Parameter, Mode};
 use crate::utils::parsers::{parse_user_mentions, parse_reactions, parse_message_identifier};
+
+/// Create the /rmem slash command
+pub fn create_command() -> CreateCommand {
+    CreateCommand::new("rmem")
+        .description("Get reaction members information from a message")
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::String, "message", "Message URL or Message ID")
+                .required(true)
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::String, "include_user", "Users to include (mention format)")
+                .required(false)
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::String, "exclude_user", "Users to exclude (mention format)")
+                .required(false)
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::String, "exclude_reaction", "Reactions to exclude")
+                .required(false)
+        )
+        .add_option(
+            CreateCommandOption::new(CommandOptionType::String, "mode", "Display mode")
+                .required(false)
+                .add_string_choice("reaction_members", "reaction_members")
+                .add_string_choice("full", "full")
+                .add_string_choice("reaction_count", "reaction_count")
+                .add_string_choice("members", "members")
+                .add_string_choice("members_author", "members_author")
+        )
+}
 
 /// Handle the /rmem slash command
 pub async fn handle_rmem_slash_command(
