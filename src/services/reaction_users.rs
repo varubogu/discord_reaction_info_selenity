@@ -89,7 +89,7 @@ async fn process_reaction_members_mode(
         let users = get_filtered_users(ctx, message, reaction, include_users, exclude_users).await?;
         let user_mentions: Vec<String> = users.iter().map(|id| format!("<@{}>", id)).collect();
         
-        result.push_str(&format!("  {}: {}\n", reaction_emoji, user_mentions.join(" ")));
+        result.push_str(&format!("  {}: ```{}```\n", reaction_emoji, user_mentions.join(" ")));
     }
     
     Ok(Response {
@@ -119,7 +119,7 @@ async fn process_full_mode(
         let users = get_filtered_users(ctx, message, reaction, include_users, exclude_users).await?;
         let user_mentions: Vec<String> = users.iter().map(|id| format!("<@{}>", id)).collect();
         
-        result.push_str(&format!("  {}: {} {}\n", reaction_emoji, users.len(), user_mentions.join(" ")));
+        result.push_str(&format!("  {}: {} ```{}```\n", reaction_emoji, users.len(), user_mentions.join(" ")));
     }
     
     Ok(Response {
@@ -148,7 +148,7 @@ async fn process_reaction_count_mode(
         
         let users = get_filtered_users(ctx, message, reaction, include_users, exclude_users).await?;
         
-        result.push_str(&format!("  {}: {}\n", reaction_emoji, users.len()));
+        result.push_str(&format!("  {}: ```{}```\n", reaction_emoji, users.len()));
     }
     
     Ok(Response {
@@ -183,7 +183,7 @@ async fn process_members_mode(
     
     Ok(Response {
         content: format!(
-            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  {}",
+            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  ```{}```",
             message_url, author_mention, user_mentions.join(" ")
         ),
     })
@@ -219,7 +219,7 @@ async fn process_members_author_mode(
     
     Ok(Response {
         content: format!(
-            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  {}",
+            "Information\n  📝: {}\n  🧔: {}\n\nmembers:\n  ```{}```",
             message_url, author_mention, user_mentions.join(" ")
         ),
     })

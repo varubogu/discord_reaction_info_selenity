@@ -1,5 +1,5 @@
 use anyhow::Result;
-use crate::utils::url_parser::{is_url, try_parse_discord_url};
+use crate::utils::url_parser::{is_url, try_parse_discord_url, IdType};
 
 /// Parse user mentions from a string containing mentions or user IDs
 pub fn parse_user_mentions(input: &str) -> Vec<u64> {
@@ -43,7 +43,7 @@ pub async fn parse_message_identifier(input: &str) -> Result<u64> {
     let is_url_result = is_url(input);
     if is_url(input).await {
         let result = try_parse_discord_url(input).await;
-        
+        return Ok(*result.unwrap().get(&IdType::MessageId).unwrap())
     }
 
     // Check if it's just a message ID (all digits)

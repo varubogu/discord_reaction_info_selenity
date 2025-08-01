@@ -1,7 +1,14 @@
+use std::any::Any;
 use anyhow::{anyhow, Result};
 use regex::Regex;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum IdType {
+    GuildId,
+    ChannelId,
+    MessageId,
+}
 
 /// URLかどうかを判定する
 pub async fn is_url(url: &str) -> bool {
@@ -9,7 +16,7 @@ pub async fn is_url(url: &str) -> bool {
 }
 
 /// Discord URLを解析して構造化データを返す
-pub async fn try_parse_discord_url(url: &str) -> Result<HashMap<String, u64>, String> {
+pub async fn try_parse_discord_url(url: &str) -> Result<HashMap<IdType, u64>, String> {
     let pattern = r"https://discord\.com/channels/(\d+)/(\d+)/(\d+)";
     let re = Regex::new(pattern).map_err(|_| "正規表現のコンパイルに失敗しました。".to_string())?;
 
@@ -34,9 +41,9 @@ pub async fn try_parse_discord_url(url: &str) -> Result<HashMap<String, u64>, St
             .parse::<u64>()
             .map_err(|_| "message_idの数値変換に失敗しました。")?;
 
-        result.insert("guild_id".to_string(), guild_id);
-        result.insert("channel_id".to_string(), channel_id);
-        result.insert("message_id".to_string(), message_id);
+        result.insert(IdType::GuildId, guild_id);
+        result.insert(IdType::ChannelId, channel_id);
+        result.insert(IdType::MessageId, message_id);
 
         Ok(result)
     } else {
@@ -108,9 +115,9 @@ mod tests {
         let url = "https://discord.com/channels/123456789/987654321/111222333";
         let result = try_parse_discord_url(url).await.unwrap();
         
-        assert_eq!(result["guild_id"], 123456789);
-        assert_eq!(result["channel_id"], 987654321);
-        assert_eq!(result["message_id"], 111222333);
+        assert_eq!(result[&IdType::GuildId], 123456789);
+        assert_eq!(result[&IdType::ChannelId], 987654321);
+        assert_eq!(result[&IdType::MessageId], 111222333);
     }
 
     #[tokio::test]
