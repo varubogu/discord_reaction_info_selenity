@@ -232,15 +232,58 @@ async fn get_filtered_users(
     include_users: &[u64],
     exclude_users: &[u64],
 ) -> Result<Vec<u64>> {
-    // For now, return a placeholder implementation
-    // TODO: Implement actual reaction user fetching from Discord API
-    let mut users = Vec::new();
+    // Fetch users who reacted with this specific reaction from Discord API
+    let mut all_reaction_users = Vec::new();
+    let mut after = None;
     
-    // This is a simplified implementation - in reality we would need to:
-    // 1. Fetch users who reacted with this specific reaction
-    // 2. Apply include_users filter (if not empty, only include these users)
-    // 3. Apply exclude_users filter (remove these users)
+    // Discord API returns users in pages, so we need to fetch all pages
+    loop {
+        let users_page = message
+            .channel_id
+            .reaction_users(
+                &ctx.http,
+                message.id,
+                reaction.reaction_type.clone(),
+                Some(100), // Limit per request (max 100)
+                after,
+            )
+            .await?;
+        
+        if users_page.is_empty() {
+            break;
+        }
+        
+        // Store the length before moving users_page
+        let page_len = users_page.len();
+        
+        // Get the last user ID for pagination
+        if let Some(last_user) = users_page.last() {
+            after = Some(last_user.id);
+        }
+        
+        all_reaction_users.extend(users_page);
+        
+        // If we got less than 100 users, we've reached the end
+        if page_len < 100 {
+            break;
+        }
+    }
     
-    // Placeholder: return empty list for now
-    Ok(users)
+    // Convert users to user IDs
+    let mut user_ids: Vec<u64> = all_reaction_users
+        .iter()
+        .map(|user| user.id.get())
+        .collect();
+    
+    // Apply include_users filter (if not empty, only include these users)
+    if !include_users.is_empty() {
+        user_ids.retain(|id| include_users.contains(id));
+    }
+    
+    // Apply exclude_users filter (remove these users)
+    if !exclude_users.is_empty() {
+        user_ids.retain(|id| !exclude_users.contains(id));
+    }
+    
+    Ok(user_ids)
 }

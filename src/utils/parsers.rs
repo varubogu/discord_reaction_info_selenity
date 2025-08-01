@@ -1,4 +1,5 @@
 use anyhow::Result;
+use crate::utils::url_parser::{is_url, try_parse_discord_url};
 
 /// Parse user mentions from a string containing mentions or user IDs
 pub fn parse_user_mentions(input: &str) -> Vec<u64> {
@@ -37,16 +38,14 @@ pub fn parse_reactions(input: &str) -> Vec<String> {
 }
 
 /// Parse message identifier (URL or ID) and return (guild_id, channel_id, message_id)
-pub fn parse_message_identifier(input: &str) -> Result<u64> {
+pub async fn parse_message_identifier(input: &str) -> Result<u64> {
     // Check if it's a Discord message URL
-    if input.starts_with("https://discord.com/channels/") || input.starts_with("https://discordapp.com/channels/") {
-        let parts: Vec<&str> = input.split('/').collect();
-        if parts.len() >= 7 {
-            let message_id = parts[7].parse()?;
-            return Ok(message_id);
-        }
+    let is_url_result = is_url(input);
+    if is_url(input).await {
+        let result = try_parse_discord_url(input).await;
+        
     }
-    
+
     // Check if it's just a message ID (all digits)
     if input.chars().all(|c| c.is_ascii_digit()) {
         let message_id: u64 = input.parse()?;

@@ -4,7 +4,7 @@ use serenity::{
     model::application::CommandInteraction,
     prelude::*,
 };
-
+use serenity::all::CreateInteractionResponseMessage;
 use crate::services::reaction_users::{process_reaction_members, Parameter, Mode};
 use crate::utils::parsers::{parse_user_mentions, parse_reactions, parse_message_identifier};
 
@@ -13,6 +13,14 @@ pub async fn handle_rmem_slash_command(
     ctx: &Context,
     command: &CommandInteraction,
 ) -> Result<()> {
+
+    // Acknowledge the interaction first
+    let response = CreateInteractionResponse::Defer(
+        CreateInteractionResponseMessage::new().ephemeral(true)
+    );
+
+    command.create_response(&ctx.http, response).await?;
+
     // Parse command options
     let mut message_param = String::new();
     let mut include_users = Vec::new();
@@ -44,16 +52,11 @@ pub async fn handle_rmem_slash_command(
         }
     }
 
-    // Defer the response to avoid 3-second timeout
-    command
-        .create_response(&ctx.http, CreateInteractionResponse::Defer(Default::default()))
-        .await?;
-
     // Parse message URL or ID
     let guild_id = command.guild_id.unwrap_or_default();
     let channel_id = command.channel_id;
 
-    let message_id = match parse_message_identifier(&message_param) {
+    let message_id = match parse_message_identifier(&message_param).await {
         Ok(ids) => ids,
         Err(_) => {
             command

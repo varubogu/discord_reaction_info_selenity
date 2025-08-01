@@ -18,13 +18,6 @@ pub async fn handle_command_interaction(
 ) -> Result<()> {
     match command.data.name.as_str() {
         "rmem" => {
-            // Acknowledge the interaction first
-            let response = CreateInteractionResponse::Defer(
-                CreateInteractionResponseMessage::new().ephemeral(true)
-            );
-            
-            command.create_response(&ctx.http, response).await?;
-
             // Process the command
             if let Err(why) = handle_rmem_slash_command(ctx, command).await {
                 error!("Error processing rmem command: {:?}", why);
