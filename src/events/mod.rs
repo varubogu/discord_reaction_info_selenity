@@ -37,9 +37,10 @@ impl EventHandler for Handler {
 
 async fn register_commands(ctx: &Context) -> Result<()> {
     use serenity::builder::{CreateCommand, CreateCommandOption};
-    use serenity::model::application::CommandOptionType;
+    use serenity::model::application::{CommandOptionType, CommandType};
 
-    let command = CreateCommand::new("rmem")
+    // Register slash command
+    let slash_command = CreateCommand::new("rmem")
         .description("Get reaction members information from a message")
         .add_option(
             CreateCommandOption::new(CommandOptionType::String, "message", "Message URL or Message ID")
@@ -67,7 +68,12 @@ async fn register_commands(ctx: &Context) -> Result<()> {
                 .add_string_choice("members_author", "members_author")
         );
 
-    ctx.http.create_global_command(&command).await?;
+    // Register context menu command
+    let context_menu_command = CreateCommand::new("Reaction Members")
+        .kind(CommandType::Message);
+
+    ctx.http.create_global_command(&slash_command).await?;
+    ctx.http.create_global_command(&context_menu_command).await?;
     info!("Commands registered successfully");
     Ok(())
 }
