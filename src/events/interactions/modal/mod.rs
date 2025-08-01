@@ -1,0 +1,1 @@
+// Modal module - placeholder for future modal interactions
