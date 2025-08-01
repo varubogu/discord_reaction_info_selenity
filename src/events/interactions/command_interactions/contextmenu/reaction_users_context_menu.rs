@@ -4,7 +4,7 @@ use serenity::{
     model::application::CommandInteraction,
     prelude::*,
 };
-
+use serenity::all::CreateInteractionResponseMessage;
 use crate::services::reaction_users::{process_reaction_members, Parameter, Mode};
 
 /// Handle the reaction users context menu command
@@ -12,13 +12,15 @@ pub async fn handle_reaction_users_context_menu(
     ctx: &Context,
     command: &CommandInteraction,
 ) -> Result<()> {
+    // Acknowledge the interaction first
+    let response = CreateInteractionResponse::Defer(
+        CreateInteractionResponseMessage::new().ephemeral(true)
+    );
+
+    command.create_response(&ctx.http, response).await?;
+
     // Get the target message from the context menu interaction
     let message = command.data.resolved.messages.values().next().cloned();
-
-    // Defer the response to avoid 3-second timeout
-    command
-        .create_response(&ctx.http, CreateInteractionResponse::Defer(Default::default()))
-        .await?;
 
     let message = match message {
         Some(msg) => msg,
