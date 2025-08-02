@@ -13,8 +13,8 @@ pub mod interactions;
 
 use interactions::command_interactions::handle_command_interaction;
 use interactions::command_interactions::slash::rmem_slash;
-use interactions::command_interactions::contextmenu::reaction_members_context_menu;
 use interactions::command_interactions::contextmenu::reaction_users_context_menu;
+use interactions::command_interactions::contextmenu::reaction_users_user_only_context_menu;
 
 pub struct Handler;
 
@@ -41,8 +41,8 @@ impl EventHandler for Handler {
 async fn register_commands(ctx: &Context) -> Result<()> {
     // Create commands using their respective modules
     let slash_command = rmem_slash::create_command();
-    let reaction_members_context_menu_command = reaction_users_context_menu::create_command();
-    let members_context_menu_command = reaction_members_context_menu::create_command();
+    let reaction_members_context_menu_command = reaction_users_user_only_context_menu::create_command();
+    let members_context_menu_command = reaction_users_context_menu::create_command();
 
     // Register all commands
     ctx.http.create_global_command(&slash_command).await?;

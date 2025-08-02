@@ -10,8 +10,8 @@ pub mod slash;
 pub mod contextmenu;
 
 use slash::rmem_slash::handle_rmem_slash_command;
-use contextmenu::reaction_users_context_menu::handle_reaction_users_context_menu;
-use contextmenu::reaction_members_context_menu::handle_reaction_members_context_menu;
+use contextmenu::reaction_users_user_only_context_menu::handle_reaction_users_context_menu;
+use contextmenu::reaction_users_context_menu::handle_reaction_members_context_menu;
 
 /// Handle command interactions (slash commands and context menus)
 pub async fn handle_command_interaction(
