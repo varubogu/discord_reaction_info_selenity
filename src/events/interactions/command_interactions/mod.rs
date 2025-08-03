@@ -12,6 +12,7 @@ pub mod contextmenu;
 use slash::rmem_slash::handle_rmem_slash_command;
 use contextmenu::reaction_users_user_only_context_menu::handle_reaction_users_context_menu;
 use contextmenu::reaction_users_context_menu::handle_reaction_members_context_menu;
+// use contextmenu::reaction_users_detailed_context_menu::handle_detailed_reaction_members_context_menu;
 
 /// Handle command interactions (slash commands and context menus)
 pub async fn handle_command_interaction(
@@ -61,6 +62,20 @@ pub async fn handle_command_interaction(
                     .await?;
             }
         }
+        // "Detailed Members" => {
+        //     // Process the Detailed Members context menu command
+        //     if let Err(why) = handle_detailed_reaction_members_context_menu(ctx, command).await {
+        //         error!("Error processing Detailed Members context menu: {:?}", why);
+        //         
+        //         // Send error response
+        //         command
+        //             .edit_response(&ctx.http, 
+        //                 EditInteractionResponse::new()
+        //                     .content("An error occurred while processing the command.")
+        //             )
+        //             .await?;
+        //     }
+        // }
         _ => {
             let response = CreateInteractionResponse::Message(
                 CreateInteractionResponseMessage::new()

@@ -11,3 +11,7 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 dotenv = "0.15"
 regex = "1.11.1"
+log = { version = "0.4.27" }
+logcall = { version = "0.1.11"}
+
+[dev-dependencies]

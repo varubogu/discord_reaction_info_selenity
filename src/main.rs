@@ -15,7 +15,7 @@ async fn main() -> Result<()>
 {
     // Load environment variables
     dotenv().ok();
-
+    
     // Initialize tracing
     tracing_subscriber::fmt::init();
 

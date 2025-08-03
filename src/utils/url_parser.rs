@@ -1,6 +1,6 @@
-use std::any::Any;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use regex::Regex;
+use std::any::Any;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

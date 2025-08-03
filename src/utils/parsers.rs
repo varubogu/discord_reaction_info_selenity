@@ -1,36 +1,20 @@
 use anyhow::Result;
+use regex::Regex;
 use crate::utils::url_parser::{is_url, try_parse_discord_url, IdType};
 
 /// Parse user mentions from a string containing mentions or user IDs
-pub fn parse_user_mentions(input: &str) -> Vec<u64> {
-    let mut user_ids = Vec::new();
-    
-    // Split by spaces and commas
-    for part in input.split(&[' ', ',']) {
-        let part = part.trim();
-        if part.is_empty() {
-            continue;
-        }
-        
-        // Parse mention format <@123456789> or <@!123456789>
-        if part.starts_with("<@") && part.ends_with(">") {
-            let id_part = &part[2..part.len()-1];
-            let id_part = if id_part.starts_with("!") { &id_part[1..] } else { id_part };
-            if let Ok(id) = id_part.parse::<u64>() {
-                user_ids.push(id);
-            }
-        }
-        // Parse raw user ID
-        else if let Ok(id) = part.parse::<u64>() {
-            user_ids.push(id);
-        }
-    }
-    
-    user_ids
+pub async fn parse_user_mentions(input: &str) -> Vec<u64> {
+    let re = Regex::new(r"<@!?(\d+)>").unwrap();
+
+    // finditerで全てのマッチを取得し、キャプチャグループ1（数字部分）を収集
+    re.captures_iter(input)
+        .filter_map(|cap| cap.get(1))
+        .filter_map(|m| m.as_str().parse::<u64>().ok())
+        .collect()
 }
 
 /// Parse reactions from a string containing reaction emojis or names
-pub fn parse_reactions(input: &str) -> Vec<String> {
+pub async fn parse_reactions(input: &str) -> Vec<String> {
     input.split(&[' ', ','])
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())

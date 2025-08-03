@@ -5,7 +5,8 @@ use serenity::{
     prelude::*,
 };
 use serenity::all::CreateInteractionResponseMessage;
-use crate::services::reaction_users::{process_reaction_members, Parameter, Mode};
+use crate::services::reaction_users::process_reaction_members;
+use crate::services::reaction_users::types::ReactionUsersParameter;
 
 /// Create the Members context menu command
 pub fn create_command() -> CreateCommand {
@@ -43,11 +44,10 @@ pub async fn handle_reaction_members_context_menu(
     };
 
     // Create parameter struct with mode=Members and empty arrays as specified
-    let parameter = Parameter {
-        include_users: Vec::new(),
-        exclude_users: Vec::new(),
-        exclude_reactions: Vec::new(),
-        mode: Mode::Members,
+    let parameter = ReactionUsersParameter {
+        is_unique_users: false,
+        is_author_include: false,
+        is_show_count: false,
     };
 
     // Process reactions and generate response
