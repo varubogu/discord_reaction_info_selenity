@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use serenity::all::{Message, User};
-use serenity::client::Context;
+use poise::serenity_prelude::{Message, MessageReaction, User};
 
 /// Retrieves a mapping of reaction emojis to the users who reacted to them, while allowing certain reactions to be excluded.
 ///
@@ -44,10 +43,10 @@ use serenity::client::Context;
 /// [`HashMap`]: https://doc.rust-lang.org/std/collections/struct.HashMap.html
 /// [`User`]: https://docs.rs/serenity/*/serenity/model/user/struct.User.html
 pub async fn to_reaction_map(
-    ctx: &Context,
+    ctx: crate::Context<'_>,
     message: &Message,
     exclude_reactions: &[String]
-) -> Result<HashMap<String, Vec<User>>, serenity::Error> {
+) -> Result<HashMap<String, Vec<User>>, crate::Error> {
     let mut result: HashMap<String, Vec<User>> = HashMap::new();
 
     for reaction in &message.reactions {
@@ -58,7 +57,7 @@ pub async fn to_reaction_map(
             continue;
         }
 
-        match fetch_reaction_users(&ctx, &message, &reaction).await {
+        match fetch_reaction_users(ctx, &message, reaction).await {
             Ok(users) => {
                 result.insert(reaction_emoji, users);
             }
@@ -112,10 +111,10 @@ pub async fn to_reaction_map(
 /// # Notes:
 /// - Users are fetched and paginated through the Discord API using the `reaction_users` method.
 async fn fetch_reaction_users(
-    ctx: &Context,
+    ctx: crate::Context<'_>,
     message: &Message,
-    reaction: &serenity::model::channel::MessageReaction,
-) -> Result<Vec<User>, serenity::Error> {
+    reaction: &MessageReaction,
+) -> Result<Vec<User>, crate::Error> {
     // Fetch users who reacted with this specific reaction from Discord API
     let mut all_reaction_users = Vec::new();
     let mut after = None;
@@ -125,7 +124,7 @@ async fn fetch_reaction_users(
         let users_page = message
             .channel_id
             .reaction_users(
-                &ctx.http,
+                &ctx.http(),
                 message.id,
                 reaction.reaction_type.clone(),
                 Some(100), // Limit per request (max 100)

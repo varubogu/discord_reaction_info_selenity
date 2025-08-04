@@ -5,11 +5,11 @@ use crate::services::reaction_users::types::ReactionUsersParameter;
 
 /// Handle the reaction members context menu command
 #[poise::command(
-    context_menu_command = "Get reaction members",
+    context_menu_command = "Get reaction-groping members",
     slash_command,
     ephemeral
 )]
-pub async fn get_reaction_members(
+pub async fn get_reaction_grouping_members(
     ctx: Context<'_>,
     message: poise::serenity_prelude::Message,
 ) -> Result<(), crate::Error> {
@@ -18,13 +18,13 @@ pub async fn get_reaction_members(
 
     let parameter = ReactionUsersParameter {
         message,
-        is_reaction_grouping: false,
+        is_reaction_grouping: true,
         is_author_include: false,
         is_show_count: false,
     };
 
     let response = process_reaction_members(
-        ctx,
+        ctx, 
         &parameter
     ).await?;
 

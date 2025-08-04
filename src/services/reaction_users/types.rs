@@ -1,6 +1,9 @@
+use poise::serenity_prelude::Message;
+
 #[derive(Debug)]
 pub struct ReactionUsersParameter {
-    pub is_unique_users: bool,
+    pub message: Message,
+    pub is_reaction_grouping: bool,
     pub is_author_include: bool,
     pub is_show_count: bool,
 }

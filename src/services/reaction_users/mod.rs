@@ -1,24 +1,24 @@
+use std::collections::HashSet;
+use std::string::String;
+use anyhow::Result;
+use poise::serenity_prelude::{Mentionable, Message, User};
+
 use crate::services::reaction_users::types::{ReactionUsersParameter, ReactionUsersResponse};
 use crate::services::reaction_users::utils::to_reaction_map;
 use crate::utils::discord_helper::make_message_url;
-use anyhow::Result;
-use serenity::all::User;
-use serenity::{
-    model::channel::Message,
-    prelude::*,
-};
-use std::collections::HashMap;
 
 pub mod types;
 pub mod utils;
 
 pub async fn process_reaction_members(
-    ctx: &Context,
-    message: &Message,
+    ctx: crate::Context<'_>,
     parameter: &ReactionUsersParameter,
-) -> Result<ReactionUsersResponse> {
+) -> Result<ReactionUsersResponse, crate::Error> {
 
-    let header_text = get_reaction_users_header_text(message).await?;
+    let header_text = get_reaction_users_header_text(&parameter.message).await?;
+    
+    // メッセージを取得
+    let message = &parameter.message;
 
     if message.reactions.is_empty() {
         // メッセージにリアクションがない場合
@@ -26,14 +26,14 @@ pub async fn process_reaction_members(
         Ok(ReactionUsersResponse {
             content: header_text + &text
         })
-    } else if parameter.is_unique_users {
-        // 全てのリアクションを合算してユーザーを取得
-        let text = get_reaction_unique_users_text(ctx, message, parameter).await?;
+    } else if parameter.is_reaction_grouping {
+        // リアクションごとにユーザーを取得
+        let text = get_reaction_grouping_text(ctx, message, parameter).await?;
         Ok(ReactionUsersResponse {
             content: header_text + &text
         })
     } else {
-        // リアクションごとにユーザーを取得
+        // 全てのリアクションを合算してユーザーを取得
         let text = get_reaction_users_text(ctx, message, parameter).await?;
         Ok(ReactionUsersResponse {
             content: header_text + &text
@@ -48,18 +48,16 @@ async fn get_reaction_users_header_text(
     let mut result: String = "".to_string();
 
     let author_mention = message.author.mention();
+
     let message_url = make_message_url(message).await;
 
     // ヘッダ情報（メッセージリンク、発言者）
-    result.push_str(&format!(r###"\
-Information\
-  📝: {}\
-  🧔: {}\
+    Ok(format!(r###"
+Information
+  📝: {}
+  🧔: {}
 
-Reactions:\
-"###, message_url, author_mention));
-
-    Ok(result.to_string())
+"###, message_url, author_mention))
 }
 
 async fn get_reaction_empty_text() -> Result<String> {
@@ -114,14 +112,14 @@ async fn get_reaction_empty_text() -> Result<String> {
 ///
 /// # Errors
 /// - This function will return `Result::Err` if an error occurs during string formatting or manipulation.
-async fn get_reaction_unique_users_text(
-    ctx: &Context,
+async fn get_reaction_users_text(
+    ctx: crate::Context<'_>,
     message: &Message,
     parameter: &ReactionUsersParameter
-) -> Result<String> {
+) -> Result<String, crate::Error> {
 
     // リアクションユーザーMap取得
-    let mentions = to_reaction_map(&ctx, &message, &[]).await?;
+    let mentions = to_reaction_map(ctx, &message, &[]).await?;
 
     // リアクションごとのユーザーでフラット化
     let mut users: Vec<User> = mentions
@@ -136,21 +134,27 @@ async fn get_reaction_unique_users_text(
 
     let users = users
         .into_iter()
+        .collect::<HashSet<_>>()
+        .into_iter()
         .map(|x| format!("{}", x.mention()))
         .collect::<Vec<String>>()
         .join(" ");
 
-    Ok(format!("```{}```\n", users))
+    Ok(format!(r###"
+Reactions:
+{}
+```{}```
+"###, users, users))
 }
 
-async fn get_reaction_users_text(
-    ctx: &Context,
+async fn get_reaction_grouping_text(
+    ctx: crate::Context<'_>,
     message: &Message,
     parameter: &ReactionUsersParameter
-) -> Result<String> {
+) -> Result<String, crate::Error> {
 
     // リアクションユーザーMap取得
-    let mentions = to_reaction_map(&ctx, &message, &[]).await?;
+    let mentions = to_reaction_map(ctx, message, &[]).await?;
 
     let results = mentions
         .into_iter()
@@ -171,80 +175,5 @@ async fn get_reaction_users_text(
         .collect::<Vec<String>>()
         .join(" ");
 
-    Ok(results)
-}
-
-/// Generates a formatted string to list emoji reactions along with the users who reacted.
-///
-/// # Arguments
-///
-/// * `mentions` - A `HashMap` where the key is the emoji (as a `String`),
-/// and the value is a `Vec<String>` containing the usernames of the users who reacted with that emoji.
-/// * `is_show_count` - A `bool` flag indicating whether to include the count of reactions for each emoji.
-///
-/// # Returns
-///
-/// Returns a `Result<String>` where the `String` contains the formatted output.
-/// Each line of the output contains:
-/// - The emoji.
-/// - (Optional) The count of reactions, if `is_show_count` is true.
-/// - A formatted code block containing the list of usernames who reacted with that emoji.
-///
-/// # Errors
-///
-/// Returns an error if there are unforeseen issues during processing (though no explicit errors are handled in this function).
-///
-/// # Examples
-///
-/// ```rust
-/// use std::collections::HashMap;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let mut mentions = HashMap::new();
-///     mentions.insert("👍".to_string(), vec!["user1".to_string(), "user2".to_string()]);
-///     mentions.insert("❤️".to_string(), vec!["user3".to_string()]);
-///
-///     let result = reaction_mentions(mentions, true).await?;
-///
-///     println!("{}", result);
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// Example Output (if `is_show_count` is `true`):
-/// ```
-///   👍:    2: user1 user2```user1 user2```
-///   ❤️:    1: user3```user3```
-/// ```
-///
-/// Example Output (if `is_show_count` is `false`):
-/// ```
-///   👍: user1 user2```user1 user2```
-///   ❤️: user3```user3```
-/// ```
-async fn reaction_mentions(
-    mentions: HashMap<String, Vec<User>>,
-    parameter: &ReactionUsersParameter
-) -> Result<String> {
-    let mut result = String::new();
-
-    let format_func = if parameter.is_show_count {
-        |emoji: &str, count: usize, users: String| format!("  {}: {:>4}: {}```{}```\n", emoji, count, users, users)
-    } else {
-        |emoji: &str, _count: usize, users: String| format!("  {}: {}```{}```\n", emoji, users, users)
-    };
-
-    for (emoji, users) in mentions {
-        let count = users.len();
-        let u = users
-            .into_iter()
-            .map(|x| format!("{}", x.id))
-            .collect::<Vec<String>>()
-            .join(" ");
-
-        result.push_str(&format_func(&emoji, count, u.to_string().to_string()));
-    }
-    Ok(result)
+    Ok(format!("Reactions:\n{}", results))
 }

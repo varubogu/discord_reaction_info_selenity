@@ -1,24 +1,14 @@
 use std::collections::HashMap;
-use serenity::all::{CommandInteraction, CreateInteractionResponseFollowup, Message, User, UserId};
-use serenity::client::Context;
-use serenity::http::Http;
+use poise::serenity_prelude::{ChannelId, Http, Message, MessageId, User, UserId};
+use crate::Context;
+use crate::utils::url_parser::{is_url, try_parse_discord_url, IdType};
 
-pub async fn fetch_event_message(ctx: &Context, command: &CommandInteraction) -> Result<Message, String> {
-    let message = command.data.resolved.messages.values().next().cloned();
-
-    match message {
-        Some(msg) => Ok(msg),
-        None => { // 処理中にメッセージが無くなった場合
-            Err("⚠️ Could not find the target message.".to_string())
-        }
-    }
-}
-
+#[allow(dead_code)]
 pub async fn fetch_discord_users(
     http: &Http,
     user_ids: &[UserId],
-) -> HashMap<UserId, Result<User, serenity::Error>> {
-    let mut results: HashMap<UserId, Result<User, serenity::Error>> = HashMap::new();
+) -> HashMap<UserId, Result<User, poise::serenity_prelude::Error>> {
+    let mut results: HashMap<UserId, Result<User, poise::serenity_prelude::Error>> = HashMap::new();
     
     for user_id in user_ids {
         results.insert(*user_id, http.get_user(*user_id).await);
@@ -64,6 +54,7 @@ pub async fn fetch_discord_users(
 /// # Notes
 /// - This function assumes that the `Message` struct has fields `guild_id`, `channel_id`, and `id`,
 ///   where `guild_id` is an `Option` type.
+#[allow(dead_code)]
 pub async fn make_message_url(message: &Message) -> String {
     
     format!("https://discord.com/channels/{}/{}/{}",
@@ -72,4 +63,47 @@ pub async fn make_message_url(message: &Message) -> String {
         message.channel_id,
         message.id
     )
+}
+
+pub async fn parse_message_context(ctx: Context<'_>, message_id_or_url: String) -> Result<Message, Vec<String>> {
+    if is_url(&message_id_or_url).await {
+        let parsed_data = try_parse_discord_url(&message_id_or_url)
+            .await
+            .map_err(|e| vec![e.to_string()])?;
+
+        let channel_id_u64 = parsed_data.get(&IdType::ChannelId);
+        let message_id_u64 = parsed_data.get(&IdType::MessageId);
+
+        // チャンネルID、メッセージIDが取得できなければエラー
+        if channel_id_u64.is_none() || message_id_u64.is_none() {
+            return Err(vec!["Invalid URL format or missing channel/message ID.".to_string()]);
+        }
+
+        let channel_id = ChannelId::from(*channel_id_u64.unwrap());
+        let message_id = MessageId::from(*message_id_u64.unwrap());
+
+        // チャンネルIDがコンテキストと一致するか確認
+        let context_channel_id = ctx.channel_id();
+        if channel_id != context_channel_id {
+            return Err(vec!["Invalid URL format or missing channel/message ID.".to_string()]);
+        }
+
+        get_message(ctx, channel_id, message_id).await
+    } else if let Ok(message_id) = message_id_or_url.parse::<u64>() {
+        let channel_id = ctx.channel_id();
+        let message_id = MessageId::from(message_id);
+        get_message(ctx, channel_id, message_id).await
+    } else {
+        Err("Invalid message ID or URL format.".to_string())
+    }.expect("TODO: panic message");
+
+    Err(vec!["Invalid message ID or URL format.".to_string()])
+}
+
+async fn get_message(ctx: Context<'_>, channel_id: ChannelId, message_id: MessageId) -> Result<Message, String> {
+    let http = ctx.http();
+    match http.get_message(channel_id, message_id).await {
+        Ok(message) => Ok(message),
+        Err(e) => return Err(format!("Failed to fetch message: {}", e))
+    }
 }

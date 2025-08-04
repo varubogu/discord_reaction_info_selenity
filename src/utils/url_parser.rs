@@ -1,6 +1,5 @@
 use anyhow::Result;
 use regex::Regex;
-use std::any::Any;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -52,6 +51,7 @@ pub async fn try_parse_discord_url(url: &str) -> Result<HashMap<IdType, u64>, St
 }
 
 /// URLからguild_idを取得する
+#[allow(dead_code)]
 pub async fn try_parse_guild_id(url: &str) -> Result<u64, String> {
     let pattern = r"https://discord\.com/channels/(\d+)/\d+/\d+";
     let re = Regex::new(pattern).map_err(|_| "正規表現のコンパイルに失敗しました。".to_string())?;
@@ -68,6 +68,7 @@ pub async fn try_parse_guild_id(url: &str) -> Result<u64, String> {
 }
 
 /// URLからchannel_idを取得する
+#[allow(dead_code)]
 pub async fn try_parse_channel_id(url: &str) -> Result<u64, String> {
     let pattern = r"https://discord\.com/channels/\d+/(\d+)/\d+";
     let re = Regex::new(pattern).map_err(|_| "正規表現のコンパイルに失敗しました。".to_string())?;
@@ -84,6 +85,7 @@ pub async fn try_parse_channel_id(url: &str) -> Result<u64, String> {
 }
 
 /// URLからmessage_idを取得する
+#[allow(dead_code)]
 pub async fn try_parse_message_id(url: &str) -> Result<u64, String> {
     let pattern = r"https://discord\.com/channels/\d+/\d+/(\d+)";
     let re = Regex::new(pattern).map_err(|_| "正規表現のコンパイルに失敗しました。".to_string())?;
