@@ -52,7 +52,7 @@ async fn main() {
 
 fn commands() -> Vec<poise::Command<Data, Error>> {
     vec![
-        events::interactions::command_interactions::slash::rmem_slash::reaction_members(),
+        events::interactions::command_interactions::slash::reaction_members::reaction_members(),
         events::interactions::command_interactions::contextmenu::reaction_users_context_menu::get_reaction_members(),
         events::interactions::command_interactions::contextmenu::reaction_grouping_users_context_menu::get_reaction_grouping_members(),
     ]

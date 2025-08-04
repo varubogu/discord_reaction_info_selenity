@@ -65,6 +65,7 @@ pub async fn make_message_url(message: &Message) -> String {
     )
 }
 
+#[allow(dead_code)]
 pub async fn parse_message_context(ctx: Context<'_>, message_id_or_url: String) -> Result<Message, Vec<String>> {
     if is_url(&message_id_or_url).await {
         let parsed_data = try_parse_discord_url(&message_id_or_url)
@@ -100,6 +101,7 @@ pub async fn parse_message_context(ctx: Context<'_>, message_id_or_url: String) 
     Err(vec!["Invalid message ID or URL format.".to_string()])
 }
 
+#[allow(dead_code)]
 async fn get_message(ctx: Context<'_>, channel_id: ChannelId, message_id: MessageId) -> Result<Message, String> {
     let http = ctx.http();
     match http.get_message(channel_id, message_id).await {

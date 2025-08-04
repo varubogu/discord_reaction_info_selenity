@@ -45,8 +45,6 @@ async fn get_reaction_users_header_text(
     message: &Message
 ) -> Result<String> {
 
-    let mut result: String = "".to_string();
-
     let author_mention = message.author.mention();
 
     let message_url = make_message_url(message).await;

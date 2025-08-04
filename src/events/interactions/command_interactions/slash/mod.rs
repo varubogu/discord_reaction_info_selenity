@@ -1,1 +1,1 @@
-pub mod rmem_slash;
+pub mod reaction_members;
