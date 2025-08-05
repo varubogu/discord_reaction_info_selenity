@@ -7,10 +7,14 @@ use crate::services::reaction_users::types::ReactionUsersParameter;
 #[poise::command(
     context_menu_command = "Get reaction members",
     slash_command,
+    name_localized("ja", "リアクションユーザー集計"),
+    description_localized("ja", "メッセージにリアクションしたユーザーを集計して表示します。"),
     ephemeral
 )]
 pub async fn get_reaction_members(
     ctx: Context<'_>,
+    #[description = "The message ID or URL to fetch reactions from."]
+    #[description_localized("ja", "リアクションを取得するメッセージのIDまたはURL")]
     message: poise::serenity_prelude::Message,
 ) -> Result<(), crate::Error> {
 
