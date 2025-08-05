@@ -23,9 +23,9 @@ pub async fn reaction_members(
     // #[description_localized("ja", "リアクションの件数表示を含めるかどうか")]
     is_show_count: Option<bool>,
 
-    #[description = "Whether to fetch unique users across all reactions instead of per reaction."]
-    // #[description_localized("ja", "リアクション毎ではなく、全てのリアクションを合算してユーザーを取得するかどうか")]
-    is_unique_users: Option<bool>,
+    #[description = "True: Counts users for each reaction. False: Counts users by combining all reactions."]
+    #[description_localized("ja", "True: リアクションごとにユーザーを集計します。 False: 全てのリアクションを合算してユーザーを集計します。")]
+    is_reaction_grouping: Option<bool>,
 ) -> Result<(), crate::Error> {
 
     // Acknowledge the interaction first
@@ -34,7 +34,7 @@ pub async fn reaction_members(
     // Create parameter struct
     let parameter = ReactionUsersParameter {
         message,
-        is_reaction_grouping: is_unique_users.unwrap_or(false),
+        is_reaction_grouping: is_reaction_grouping.unwrap_or(false),
         is_author_include: is_author_include.unwrap_or(false),
         is_show_count: is_show_count.unwrap_or(false),
     };
