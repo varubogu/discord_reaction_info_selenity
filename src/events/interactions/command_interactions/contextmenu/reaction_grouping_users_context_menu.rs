@@ -5,7 +5,7 @@ use crate::services::reaction_users::types::ReactionUsersParameter;
 
 /// Handle the reaction members context menu command
 #[poise::command(
-    context_menu_command = "Get reaction-groping members",
+    context_menu_command = "Get reaction-grouping members",
     slash_command,
     name_localized("ja", "リアクションごとのユーザー集計"),
     description_localized("ja", "メッセージにリアクションしたユーザーをリアクションごとに集計して表示します。"),
