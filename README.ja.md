@@ -71,6 +71,10 @@ Discordメッセージのリアクション情報を抽出・表示するDiscord
    cargo run
    ```
 
+### Dockerデプロイメント
+
+サーバーでのDocker デプロイについては、[Docker デプロイメントガイド](docs/ja/docker-deploy.md)でDockerとDocker Composeを使用した詳細な手順を参照してください。
+
 ## Discord Bot セットアップ
 
 ### 必要な権限

@@ -71,6 +71,10 @@ Right-click any message and choose from two options:
    cargo run
    ```
 
+### Docker Deployment
+
+For server deployment using Docker, see the [Docker Deployment Guide](docs/en/docker-deploy.md) for detailed instructions on using Docker and Docker Compose.
+
 ## Discord Bot Setup
 
 ### Required Permissions
